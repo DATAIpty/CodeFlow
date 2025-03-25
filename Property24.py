@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import pandas as pd  # Import pandas to work with data frames
 
 # URL of properties for sale in Durban
 url = "https://www.property24.com/for-sale/durban/kwazulu-natal/169"
@@ -11,6 +12,9 @@ headers = {
 
 # Send a GET request to fetch the webpage content
 response = requests.get(url, headers=headers)
+
+# Initialize a list to store the scraped data
+property_list = []
 
 # Check if the response was successful
 if response.status_code == 200:
@@ -46,15 +50,27 @@ if response.status_code == 200:
         parking = parking.find_next("span").text.strip() if parking else "No Parking"
         size = size_tag.text.strip() if size_tag else "No Size"
 
-        # Print the scraped data
-        print(f"Title: {title}")
-        print(f"Price: {price}")
-        print(f"Location: {location}")
-        print(f"Bedrooms: {bedrooms}")
-        print(f"Bathrooms: {bathrooms}")
-        print(f"Parking: {parking}")
-        print(f"Size: {size}")
-        print("-" * 50)
+        # Store the scraped data in a dictionary
+        property_data = {
+            "Title": title,
+            "Price": price,
+            "Location": location,
+            "Bedrooms": bedrooms,
+            "Bathrooms": bathrooms,
+            "Parking": parking,
+            "Size": size
+        }
+
+        # Add the property data to the list
+        property_list.append(property_data)
 
 else:
     print(f"Failed to retrieve data. HTTP Status Code: {response.status_code}")
+
+# Convert the list of dictionaries into a pandas DataFrame
+df = pd.DataFrame(property_list)
+
+# Save the DataFrame to an Excel file
+df.to_excel("property_listings.xlsx", index=False, engine="openpyxl")
+
+print("Data has been saved to 'property_listings.xlsx'")
